@@ -1,9 +1,156 @@
-PROJ_PATH = ./
-SRC_PATH = $(PROJ_PATH)/src
+========================================================================================================================
+https://blog.csdn.net/lu_embedded/article/details/76796107
 
-INCLUDE_PATH = -I/$(PROJ_PATH)/include/osip2 -I/$(PROJ_PATH)/include/eXosip -I/$(PROJ_PATH)/include/myfunc
-LINK_PATH = -L/$(PROJ_PATH)/lib/osip2 -L/$(PROJ_PATH)/lib/eXosip -L/$(PROJ_PATH)/lib/myfunc
-LIB = -losp2 -leXosip -lmyfunc
+CC=gcc
+SRCS=$(wildcard *.c */*.c)
+OBJS=$(patsubst %.c, %.o, $(SRCS))
+FLAG=-g
+NAME=$(wildcard *.c)
+TARGET=$(patsubst %.c, %, $(NAME))
+
+$(TARGET):$(OBJS)
+    $(CC) -o $@ $^ $(FLAG)
+
+%.o:%.c
+    $(CC) -o $@ -c $< -g
+
+clean:
+    rm -rf $(TARGET) $(OBJS)
+
+　　解释一下： 
+　　（1）第1行指定编译器为 gcc，可以根据需要修改为 g++ 或者 arm-linux-gcc 等交叉编译工具链。 
+　　（2）第2行是为了获取匹配模式的文件名，*.c 表示当前工程目录的 c 文件，*/*.c 表示所有下一级目录的 .c 文件。 
+　　（3）第3行是将 $(SRCS) 中的 .c 文件替换成 .o 文件。 
+　　（4）第4行用于指定编译选项，根据需要添加，比如 -g、-ml、-Wall、-O2 等等。 
+　　（5）第5、6行，同样使用了 wildcard 和 patsubst 函数来处理，目的是为了指定最终生成的可执行文件名。 
+　　（6）第8行 $(TARGET):$(OBJS) 表示由 .o 文件链接成可执行文件。 
+　　（7）注意第9行前面是一个 <tab> 键，而 $@ 表示目标，也就是 $(TARGET)，$^ 表示依赖列表，也就是 $(OBJS) 。 
+　　（8）第11行 %.o:%.c 表示由 .c 文件生成 .o 文件。 
+　　（9）第12行中的 $< 表示搜索到的第一个匹配的文件。 
+　　（10）第14行的 clean 是伪目标（.PHONY），它不需要依赖，执行 make 命令时是不会执行的，当执行 make clean 时才会执行。 
+　　 
+　　另外，Makefile 的赋值除了使用等号（=），还可以使用 := 、+= 、?= 符号。具体含义如下：
+
+:= 表示简单赋值（注意右边的 $ 值只会向上寻找）
++= 表示追加赋值
+?= 表示判断赋值（判断左边是否已经定义过，如果是则忽略本次赋值）
+========================================================================================================================
+
+SRCS = $(wildcard *.c ../lib/*.c)    #wildcard把 指定目录 ./ 和 ../lib 下的所有后缀是c的文件全部展开。
+
+OBJS = $(SRCS:.c = .o)    #OBJS将$(SRCS)下的.c文件转化为.o文件
+
+CC = gcc   #代表所使用的编译器
+
+INCLUDES = -I../include \   #头文件查找路径
+           -I. \
+
+LIBS = -L../lib \   #链接库查找地址
+
+CCFLAGS = -g -Wall -O0   #附加参数
+
+OUTPUT = dirls.out   #输出程序名称
+
+all:$(OUTPUT)
+
+$(OUTPUT) : $(OBJS)
+    $(CC) $^ -o $@ $(INCLUDES) $(LIBS)
+
+%.o : %.c
+    $(CC) -c $< $(CCFLAGS)
+
+clean:
+    rm -rf *.out *.o    #清除中间文件及生成文件
+
+.PHONY:clean
 
 
-app:
+############################################################# 
+# Makefile for shared library.
+# 编译动态链接库
+#############################################################
+#set your own environment option
+CC = g++
+CC_FLAG = -D_NOMNG -D_FILELINE
+
+#set your inc and lib
+INC = 
+LIB = -lpthread -L./ -lsvrtool
+
+#make target lib and relevant obj 
+PRG = libsvrtool.so
+OBJ = Log.o
+
+#all target
+all:$(PRG)
+
+$(PRG):$(OBJ)
+    $(CC) -shared -o $@ $(OBJ) $(LIB)
+
+.SUFFIXES: .c .o .cpp
+.cpp.o:
+    $(CC) $(CC_FLAG) $(INC) -c $*.cpp -o $*.o
+
+.PRONY:clean
+clean:
+    @echo "Removing linked and compiled files......;
+    rm -f $(OBJ) $(PRG)
+
+
+#############################################################
+# Makefile for static library.
+# 编译静态链接库
+#############################################################
+#set your own environment option
+CC = g++
+CC_FLAG = -D_NOMNG -D_FILELINE
+
+#static library use 'ar' command 
+AR = ar
+
+#set your inc and lib
+INC = 
+LIB = -lpthread -L./ -lsvrtool
+
+#make target lib and relevant obj 
+PRG = libsvrtool.a
+OBJ = Log.o
+
+#all target
+all:$(PRG)
+$(PRG):$(OBJ)
+    ${AR} rv ${PRG} $?
+
+.SUFFIXES: .c .o .cpp
+.cpp.o:
+    $(CC) $(CC_FLAG) $(INC) -c $*.cpp -o $*.o
+
+.PRONY:clean
+clean:
+    @echo "Removing linked and compiled files......"
+    rm -f $(OBJ) $(PRG)
+
+
+###########################################
+#Makefile for simple programs
+###########################################
+INC=
+LIB= -lpthread
+
+CC=CC
+CC_FLAG=-Wall
+
+PRG=threadpooltest
+OBJ=CThreadManage.o CThreadPool.o CThread.o CWorkerThread.o threadpooltest.o
+
+$(PRG):$(OBJ)
+    $(CC) $(INC) $(LIB) -o $@ $(OBJ)
+    
+.SUFFIXES: .c .o .cpp
+.cpp.o:
+    $(CC) $(CC_FLAG) $(INC) -c $*.cpp -o $*.o
+
+.PRONY:clean
+clean:
+    @echo "Removing linked and compiled files......"
+    rm -f $(OBJ) $(PRG)
