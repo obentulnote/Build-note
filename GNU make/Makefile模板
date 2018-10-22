@@ -1,0 +1,9 @@
+PROJ_PATH = ./
+SRC_PATH = $(PROJ_PATH)/src
+
+INCLUDE_PATH = -I/$(PROJ_PATH)/include/osip2 -I/$(PROJ_PATH)/include/eXosip -I/$(PROJ_PATH)/include/myfunc
+LINK_PATH = -L/$(PROJ_PATH)/lib/osip2 -L/$(PROJ_PATH)/lib/eXosip -L/$(PROJ_PATH)/lib/myfunc
+LIB = -losp2 -leXosip -lmyfunc
+
+
+app:
