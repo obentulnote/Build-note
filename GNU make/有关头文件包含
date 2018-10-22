@@ -1,0 +1,12 @@
+1. 可以通过   gcc -v -x c -E -   来查看头文件的搜索路径，一般情况下为：
+      #include "..." 搜索从这里开始：
+      #include <...> 搜索从这里开始：
+      /usr/lib/gcc/x86_64-redhat-linux/4.8.5/include
+      /usr/local/include
+      /usr/include
+   这里的目录不递归，即只搜索这三个目录，而不会继续搜索子目录。
+   一般情况下我们在使用time.h的的时候是 #include <sys/time.h>,这里的sys就是/usr/include的子目录，所以，如果我们在使用
+   某个开源项目时，其include目录在/usr/local/include下面的子目录中，比如osip2的头文件全路径就是/usr/local/include/osip2，这个
+   时候我们在include的时候就是 #include <osip2/osip.h>, 当然我们可以在makefile中增加include路径，但是没必要，那样反而不直观
+   
+2. 我们在使用time相关库时，会有多个头文件重复定义time_t这个变量的情况，一般情况下，我们只要包含sys/time.h就行了
